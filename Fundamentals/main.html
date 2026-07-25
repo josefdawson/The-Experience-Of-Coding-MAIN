@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learn the Fundamentals</title>
+    <link rel="stylesheet" href="../Start/shared.css">
+    <style>
+        body { padding: 20px; }
+
+        .topics-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            width: 100%;
+        }
+
+        .topic-btn {
+            background-color: rgb(30, 30, 40);
+            color: white;
+            font-weight: 600;
+            font-size: 16px;
+            border: 1px solid rgb(60, 60, 80);
+            border-radius: 10px;
+            padding: 18px 24px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: left;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .topic-btn:hover {
+            transform: scale(1.02);
+            background-color: rgb(45, 45, 60);
+            border-color: rgb(80, 80, 100);
+        }
+
+        .topic-btn:active {
+            transform: scale(1.04);
+            background-color: rgb(55, 55, 70);
+        }
+
+        .topic-num {
+            color: rgb(80, 180, 255);
+            font-size: 13px;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <div id="header">
+        <button class="backBtn" onclick="goBack()">&#8592; Back</button>
+        <h2>Learn the Fundamentals</h2>
+        <button id="settingsBtn" onclick="GETI('settingsPanel').style.display='flex'">Settings</button>
+    </div>
+
+    <div id="settingsPanel">
+        <h2>Settings</h2>
+        <button onclick="document.body.style.backgroundColor='rgb(30,30,30)';document.body.style.color='white'">Dark Mode</button>
+        <button onclick="document.body.style.backgroundColor='rgb(240,240,240)';document.body.style.color='black'">Light Mode</button>
+        <button onclick="GETI('settingsPanel').style.display='none'">Close</button>
+    </div>
+
+    <div class="content" id="pageTopics">
+        <div class="main-title">Learn the Fundamentals</div>
+        <div class="subtitle">Master the building blocks of every programming language</div>
+        <div class="topics-grid" id="topicsGrid"></div>
+    </div>
+
+    <div class="content hidden" id="pageLesson">
+        <div class="lesson-title" id="lessonTitle"></div>
+        <div class="lesson" id="lessonContent"></div>
+        <div class="lesson-nav">
+            <button class="nav-btn" id="prevLesson" onclick="changeLesson(-1)">Previous</button>
+            <button class="nav-btn" id="nextLesson" onclick="changeLesson(1)">Next</button>
+        </div>
+    </div>
+
+    <script>
+        function GETI(id) { return document.getElementById(id); }
+
+        let currentTopic = null;
+        let currentLessonIdx = 0;
+
+        function goBack() {
+            if (!GETI("pageLesson").classList.contains("hidden")) {
+                GETI("pageLesson").classList.add("hidden");
+                GETI("pageTopics").classList.remove("hidden");
+                return;
+            }
+            window.location.href = "../index.html";
+        }
+
+        function pickTopic(idx) {
+            currentTopic = idx;
+            currentLessonIdx = 0;
+            GETI("pageTopics").classList.add("hidden");
+            GETI("pageLesson").classList.remove("hidden");
+            renderLesson();
+        }
+
+        function changeLesson(dir) {
+            const lessons = topics[currentTopic].lessons;
+            currentLessonIdx += dir;
+            if (currentLessonIdx < 0) currentLessonIdx = 0;
+            if (currentLessonIdx >= lessons.length) currentLessonIdx = lessons.length - 1;
+            renderLesson();
+        }
+
+        function renderLesson() {
+            const lessons = topics[currentTopic].lessons;
+            const lesson = lessons[currentLessonIdx];
+            GETI("lessonTitle").textContent =
+                topics[currentTopic].title +
+                " (Lesson " + (currentLessonIdx + 1) + " of " + lessons.length + ")";
+            GETI("lessonContent").innerHTML = lesson;
+            GETI("prevLesson").style.visibility = currentLessonIdx === 0 ? "hidden" : "visible";
+            GETI("nextLesson").style.visibility = currentLessonIdx === lessons.length - 1 ? "hidden" : "visible";
+        }
+
+        const topics = [
+            {
+                title: "What is Programming?",
+                lessons: [
+                    `<div class="lesson-section">
+                        <h3>How Computers Think</h3>
+                        <p>A computer is just a machine that follows instructions. Programming is writing those instructions in a language the computer understands.</p>
+                        <p>Every program you've ever used — games, websites, apps — is just a list of steps the computer follows.</p>
+                    </div>
+                    <div class="lesson-section">
+                        <h3>What is Code?</h3>
+                        <p>Code is text you write that tells a computer what to do. You write code in a <strong>programming language</strong> like JavaScript, Python, or C++.</p>
+                        <p>A <strong>program</strong> is a collection of code files that work together to do something useful.</p>
+                    </div>
+                    <div class="lesson-section">
+                        <h3>How Code Runs</h3>
+                        <p>When you "run" a program, the computer reads your code line by line, from top to bottom, and executes each instruction.</p>
+                        <p>Some instructions are simple (print text), while others control the flow (loops, conditions).</p>
+                    </div>`,
+
+                    `<div class="lesson-section">
+                        <h3>Pseudocode</h3>
+                        <p>Before writing real code, programmers often plan using <strong>pseudocode</strong> — plain English that describes the logic:</p>
+                        <pre><code>IF it is raining THEN
+    pick up umbrella
+ELSE
+    wear sunglasses
+END IF</code></pre>
+                        <p>This is the same logic you'll write in real code, just without strict syntax.</p>
+                    </div>
+                    <div class="lesson-section">
+                        <h3>The Development Process</h3>
+                        <p>Writing code follows a cycle:</p>
+                        <p><strong>1.</strong> Think about what you want</p>
+                        <p><strong>2.</strong> Write the code</p>
+                        <p><strong>3.</strong> Run it and see if it works</p>
+                        <p><strong>4.</strong> Fix any errors (debugging)</p>
+                        <p><strong>5.</strong> Repeat until it's right</p>
+                        <p>Every programmer makes mistakes — that's normal!</p>
+                    </div>`
+                ]
+            },
+            {
+                title: "Variables & Data Types",
+                lessons: [
+                    `<div class="lesson-section">
+                        <h3>What is a Variable?</h3>
+                        <p>A variable is a <strong>named container</strong> that holds a value. Think of it like a labeled box — the label is the variable name, and the box holds the data.</p>
+                        <pre><code>name = "Alice"       # a variable holding text
+age = 25             # a variable holding a number
+isStudent = true     # a variable holding true/false</code></pre>
+                    </div>
+                    <div class="lesson-section">
+                        <h3>Naming Variables</h3>
+                        <p>Variable names should be descriptive:</p>
+                        <pre><code>x = 5                # bad — unclear
+score = 100          # good — tells you what it is
+playerScore = 100    # even better</code></pre>
+                        <p>Rules vary by language, but generally: no spaces, can't start with a number, and case matters (<code>score</code> ≠ <code>Score</code>).</p>
+                    </div>`,
+
+                    `<div class="lesson-section">
+                        <h3>Data Types</h3>
+                        <p>Values have <strong>types</strong> that tell the computer what kind of data it is:</p>
+                        <p><strong>String (text)</strong> — words, sentences, anything in quotes: <code>"Hello"</code></p>
+                        <p><strong>Integer (number)</strong> — whole numbers: <code>42</code>, <code>-7</code></p>
+                        <p><strong>Float (decimal)</strong> — numbers with decimals: <code>3.14</code></p>
+                        <p><strong>Boolean</strong> — true or false: <code>true</code></p>
+                    </div>
+                    <div class="lesson-section">
+                        <h3>Why Types Matter</h3>
+                        <p>The computer treats different types differently:</p>
+                        <pre><code>"5" + "3"  = "53"     # adding strings concatenates
+5  + 3     = 8        # adding numbers does math</code></pre>
+                        <p>Accidentally mixing types is a common source of bugs!</p>
+                    </div>`
+                ]
+            },
+            {
+                title: "Operators",
+                lessons: [
+                    `<div class="lesson-section">
+                        <h3>Arithmetic Operators</h3>
+                        <p>Do math on numbers:</p>
+                        <pre><code>10 + 3   # Addition → 13
+10 - 3   # Subtraction → 7
+10 * 3   # Multiplication → 30
+10 / 3   # Division → 3.333...
+10 % 3   # Modulo (remainder) → 1
+10 ** 3  # Power → 1000 (varies by language)</code></pre>
+                    </div>
+                    <div class="lesson-section">
+                        <h3>Comparison Operators</h3>
+                        <p>Compare values — they return true or false:</p>
+                        <pre><code>5 == 5   # Equal → true
+5 != 3   # Not equal → true
+5 > 3    # Greater than → true
+5 < 3    # Less than → false
+5 >= 5   # Greater or equal → true
+5 <= 3   # Less or equal → false</code></pre>
+                    </div>`,
+
+                    `<div class="lesson-section">
+                        <h3>Logical Operators</h3>
+                        <p>Combine conditions:</p>
+                        <pre><code>true AND true    # → true
+true AND false   # → false
+true OR false    # → true
+false OR false   # → false
+NOT true         # → false</code></pre>
+                        <p>Use these to build complex conditions:</p>
+                        <pre><code>age >= 18 AND hasID == true</code></pre>
+                    </div>
+                    <div class="lesson-section">
+                        <h3>String Operators</h3>
+                        <p>Join strings together (concatenation):</p>
+                        <pre><code>"Hello" + " " + "World"  # → "Hello World"
+"Score: " + 100          # → "Score: 100"</code></pre>
+                    </div>`
+                ]
+            },
+            {
+                title: "Conditions (if/else)",
+                lessons: [
+                    `<div class="lesson-section">
+                        <h3>Making Decisions</h3>
+                        <p>Programs need to make choices based on data. An <code>if</code> statement runs code only when a condition is true:</p>
+                        <pre><code>temperature = 35
+
+if temperature > 30:
+    print("It's hot outside!")
+</code></pre>
+                        <p>If the condition is false, that code is skipped entirely.</p>
+                    </div>
+                    <div class="lesson-section">
+                        <h3>Else &amp; Elif</h3>
+                        <p>Handle the "otherwise" case and chain multiple conditions:</p>
+                        <pre><code>grade = 85
+
+if grade >= 90:
+    print("A")
+elif grade >= 80:
+    print("B")
+elif grade >= 70:
+    print("C")
+else:
+    print("F")</code></pre>
+                    </div>`,
+
+                    `<div class="lesson-section">
+                        <h3>Nested Conditions</h3>
+                        <p>You can put conditions inside other conditions:</p>
+                        <pre><code>isLoggedIn = true
+isAdmin = false
+
+if isLoggedIn:
+    if isAdmin:
+        print("Welcome, Admin!")
+    else:
+        print("Welcome, User!")
+else:
+    print("Please log in")</code></pre>
+                    </div>
+                    <div class="lesson-section">
+                        <h3>Common Patterns</h3>
+                        <pre><code># Checking if a value exists
+if username != "": ...
+
+# Checking membership
+if item in shoppingCart: ...
+
+# Checking range
+if 18 <= age <= 65: ...</code></pre>
+                    </div>`
+                ]
+            },
+            {
+                title: "Loops",
+                lessons: [
+                    `<div class="lesson-section">
+                        <h3>Why Loops?</h3>
+                        <p>Loops repeat code automatically. Instead of writing the same thing 100 times, you write it once and let the computer repeat it:</p>
+                        <pre><code># Without a loop:
+print("Hello!")
+print("Hello!")
+print("Hello!")
+# ... 97 more times
+
+# With a loop:
+for i in range(100):
+    print("Hello!")</code></pre>
+                    </div>
+                    <div class="lesson-section">
+                        <h3>For Loops</h3>
+                        <p>Repeat a specific number of times or iterate over a collection:</p>
+                        <pre><code># Count from 0 to 4
+for i in range(5):
+    print(i)
+
+# Loop through items
+fruits = ["apple", "banana", "cherry"]
+for fruit in fruits:
+    print(fruit)</code></pre>
+                    </div>`,
+
+                    `<div class="lesson-section">
+                        <h3>While Loops</h3>
+                        <p>Repeat as long as a condition is true:</p>
+                        <pre><code>count = 0
+while count < 5:
+    print(count)
+    count += 1</code></pre>
+                        <p><strong>Warning:</strong> If the condition never becomes false, the loop runs forever!</p>
+                    </div>
+                    <div class="lesson-section">
+                        <h3>Loop Control</h3>
+                        <pre><code># Skip to next iteration
+for i in range(10):
+    if i == 3:
+        continue    # skip 3
+    print(i)
+
+# Exit the loop early
+for i in range(100):
+    if i == 5:
+        break       # stop at 5
+    print(i)</code></pre>
+                    </div>`,
+
+                    `<div class="lesson-section">
+                        <h3>Real-World Example</h3>
+                        <pre><code># Find the first even number in a list
+numbers = [3, 7, 8, 11, 14]
+for num in numbers:
+    if num % 2 == 0:
+        print(f"Found it: {num}")
+        break
+
+# Output: Found it: 8</code></pre>
+                    </div>`
+                ]
+            },
+            {
+                title: "Functions",
+                lessons: [
+                    `<div class="lesson-section">
+                        <h3>What is a Function?</h3>
+                        <p>A function is a <strong>reusable block of code</strong> that does a specific job. You define it once and call it whenever you need it.</p>
+                        <pre><code># Defining a function
+def greet(name):
+    print("Hello, " + name + "!")
+
+# Calling it
+greet("Alice")   # → Hello, Alice!
+greet("Bob")     # → Hello, Bob!</code></pre>
+                    </div>
+                    <div class="lesson-section">
+                        <h3>Parameters &amp; Arguments</h3>
+                        <p><strong>Parameters</strong> are the variables in the function definition. <strong>Arguments</strong> are the values you pass when calling it.</p>
+                        <pre><code>def add(a, b):      # a and b are parameters
+    return a + b
+
+result = add(3, 5)  # 3 and 5 are arguments
+print(result)       # → 8</code></pre>
+                    </div>`,
+
+                    `<div class="lesson-section">
+                        <h3>Return Values</h3>
+                        <p>Functions can send back a result using <code>return</code>:</p>
+                        <pre><code>def square(n):
+    return n * n
+
+def isEven(n):
+    return n % 2 == 0
+
+x = square(5)       # x = 25
+y = isEven(4)       # y = true</code></pre>
+                        <p>Without <code>return</code>, a function returns nothing (undefined).</p>
+                    </div>
+                    <div class="lesson-section">
+                        <h3>Why Functions Matter</h3>
+                        <p><strong>Reuse:</strong> Write once, use everywhere</p>
+                        <p><strong>Organization:</strong> Break complex problems into small pieces</p>
+                        <p><strong>Readability:</strong> <code>calculateTax(amount)</code> is clearer than 20 lines of math</p>
+                        <p><strong>Debugging:</strong> Test each function separately</p>
+                    </div>`,
+
+                    `<div class="lesson-section">
+                        <h3>Multiple Parameters</h3>
+                        <pre><code>def createProfile(name, age, city):
+    return f"{name}, age {age}, from {city}"
+
+profile = createProfile("Alice", 25, "NYC")
+print(profile)  # → Alice, age 25, from NYC</code></pre>
+                    </div>`
+                ]
+            },
+            {
+                title: "Arrays & Lists",
+                lessons: [
+                    `<div class="lesson-section">
+                        <h3>What is a List?</h3>
+                        <p>A list (or array) stores <strong>multiple values</strong> in a single variable:</p>
+                        <pre><code>colors = ["red", "green", "blue"]
+numbers = [10, 20, 30, 40, 50]
+mixed = ["hello", 42, true]</code></pre>
+                    </div>
+                    <div class="lesson-section">
+                        <h3>Accessing Items</h3>
+                        <p>Items are numbered starting from <strong>0</strong>:</p>
+                        <pre><code>colors = ["red", "green", "blue"]
+#  Index:     0        1       2
+
+print(colors[0])   # "red"
+print(colors[2])   # "blue"
+print(colors[-1])  # "blue" (last item)</code></pre>
+                    </div>`,
+
+                    `<div class="lesson-section">
+                        <h3>Adding &amp; Removing</h3>
+                        <pre><code>fruits = ["apple", "banana"]
+
+fruits.append("cherry")     # Add to end
+fruits.insert(1, "mango")   # Insert at index 1
+fruits.remove("banana")     # Remove by value
+popped = fruits.pop()       # Remove & return last</code></pre>
+                    </div>
+                    <div class="lesson-section">
+                        <h3>List Length</h3>
+                        <pre><code>items = [1, 2, 3, 4, 5]
+print(len(items))   # 5</code></pre>
+                    </div>`,
+
+                    `<div class="lesson-section">
+                        <h3>Looping Through Lists</h3>
+                        <pre><code>names = ["Alice", "Bob", "Charlie"]
+
+for name in names:
+    print(f"Hello, {name}")
+
+# With index
+for i in range(len(names)):
+    print(f"{i}: {names[i]}")</code></pre>
+                    </div>
+                    <div class="lesson-section">
+                        <h3>Real-World Example</h3>
+                        <pre><code># Keep a to-do list
+todos = []
+todos.append("Buy groceries")
+todos.append("Walk the dog")
+todos.append("Write code")
+
+print(f"You have {len(todos)} tasks")
+for i, task in enumerate(todos):
+    print(f"  {i+1}. {task}")</code></pre>
+                    </div>`
+                ]
+            },
+            {
+                title: "Objects & Dictionaries",
+                lessons: [
+                    `<div class="lesson-section">
+                        <h3>What is a Dictionary?</h3>
+                        <p>A dictionary stores data as <strong>key-value pairs</strong> instead of a numbered list:</p>
+                        <pre><code>person = {
+    "name": "Alice",
+    "age": 25,
+    "city": "NYC"
+}</code></pre>
+                    </div>
+                    <div class="lesson-section">
+                        <h3>Accessing Values</h3>
+                        <pre><code>person = {"name": "Alice", "age": 25}
+
+print(person["name"])    # "Alice"
+print(person.get("age")) # 25</code></pre>
+                        <p>Use <code>.get()</code> to avoid errors if the key doesn't exist.</p>
+                    </div>`,
+
+                    `<div class="lesson-section">
+                        <h3>Adding &amp; Updating</h3>
+                        <pre><code>person = {"name": "Alice"}
+
+person["age"] = 25          # Add new key
+person["name"] = "Bob"      # Update existing
+del person["age"]           # Delete a key</code></pre>
+                    </div>
+                    <div class="lesson-section">
+                        <h3>Checking Keys</h3>
+                        <pre><code>person = {"name": "Alice", "age": 25}
+
+if "name" in person:
+    print("Name exists!")
+
+print(len(person))  # 2</code></pre>
+                    </div>`,
+
+                    `<div class="lesson-section">
+                        <h3>Looping Through Dictionaries</h3>
+                        <pre><code>person = {"name": "Alice", "age": 25, "city": "NYC"}
+
+# Loop through keys
+for key in person:
+    print(f"{key}: {person[key]}")
+
+# Loop through key-value pairs
+for key, value in person.items():
+    print(f"{key} = {value}")</code></pre>
+                    </div>
+                    <div class="lesson-section">
+                        <h3>Real-World Example</h3>
+                        <pre><code># A simple phone book
+phoneBook = {
+    "Alice": "555-1234",
+    "Bob": "555-5678",
+    "Charlie": "555-9012"
+}
+
+name = "Bob"
+if name in phoneBook:
+    print(f"{name}'s number: {phoneBook[name]}")
+else:
+    print("Not found")</code></pre>
+                    </div>`
+                ]
+            },
+            {
+                title: "Errors & Debugging",
+                lessons: [
+                    `<div class="lesson-section">
+                        <h3>What are Errors?</h3>
+                        <p>When something goes wrong, the computer throws an <strong>error</strong> (also called an exception). Don't panic — errors tell you exactly what went wrong and where.</p>
+                        <pre><code># Common errors:
+# SyntaxError    — you typed something wrong
+# TypeError      — wrong data type
+# NameError      — variable doesn't exist
+# IndexError     — list index out of range
+# KeyError       — dictionary key doesn't exist</code></pre>
+                    </div>
+                    <div class="lesson-section">
+                        <h3>Reading Error Messages</h3>
+                        <p>Error messages have 3 key parts:</p>
+                        <p><strong>1.</strong> The error type (what went wrong)</p>
+                        <p><strong>2.</strong> The message (details)</p>
+                        <p><strong>3.</strong> The line number (where it happened)</p>
+                        <pre><code>Traceback (most recent call last):
+  File "app.py", line 5, in &lt;module&gt;
+    print(undefined_var)
+                      ^^^^^^^^^^^^
+NameError: name 'undefined_var' is not defined</code></pre>
+                    </div>`,
+
+                    `<div class="lesson-section">
+                        <h3>Handling Errors Gracefully</h3>
+                        <p>Use try/catch to handle errors without crashing:</p>
+                        <pre><code>try:
+    number = int(input("Enter a number: "))
+    result = 100 / number
+    print(result)
+except ValueError:
+    print("That's not a valid number!")
+except ZeroDivisionError:
+    print("Can't divide by zero!")</code></pre>
+                    </div>
+                    <div class="lesson-section">
+                        <h3>Debugging Tips</h3>
+                        <p><strong>1.</strong> Read the error message — it usually tells you exactly what's wrong</p>
+                        <p><strong>2.</strong> Check the line number mentioned in the error</p>
+                        <p><strong>3.</strong> Print variables to see their actual values</p>
+                        <p><strong>4.</strong> Check for typos in variable names</p>
+                        <p><strong>5.</strong> Make sure data types match what you expect</p>
+                        <p><strong>6.</strong> Take a break and come back with fresh eyes!</p>
+                    </div>`,
+
+                    `<div class="lesson-section">
+                        <h3>Preventing Errors</h3>
+                        <pre><code># Check before using
+if len(myList) > 0:
+    print(myList[0])
+
+# Use safe access
+value = myDict.get("key", "default")
+
+# Validate input
+age = int(input("Age: "))
+if age < 0 or age > 150:
+    print("Invalid age")</code></pre>
+                    </div>`
+                ]
+            },
+            {
+                title: "Input & Output",
+                lessons: [
+                    `<div class="lesson-section">
+                        <h3>Printing Output</h3>
+                        <p>The most basic way to see what your code is doing:</p>
+                        <pre><code>print("Hello, World!")
+print("The answer is", 42)
+print("x =", x, "y =", y)</code></pre>
+                        <p>Printing is your main tool for <strong>debugging</strong> — see what values your variables hold.</p>
+                    </div>
+                    <div class="lesson-section">
+                        <h3>Getting User Input</h3>
+                        <pre><code>name = input("What is your name? ")
+age = int(input("How old are you? "))
+print(f"Hello {name}, you are {age} years old!")</code></pre>
+                        <p><code>input()</code> always returns text — use <code>int()</code> or <code>float()</code> to convert to numbers.</p>
+                    </div>`,
+
+                    `<div class="lesson-section">
+                        <h3>String Formatting</h3>
+                        <p>Build strings with variables cleanly:</p>
+                        <pre><code>name = "Alice"
+age = 25
+
+# f-strings (modern, preferred)
+print(f"My name is {name} and I'm {age}")
+
+# Format method
+print("My name is {} and I'm {}".format(name, age))
+
+# Concatenation (old way)
+print("My name is " + name + " and I'm " + str(age))</code></pre>
+                    </div>`
+                ]
+            },
+            {
+                title: "Scope & Best Practices",
+                lessons: [
+                    `<div class="lesson-section">
+                        <h3>Variable Scope</h3>
+                        <p><strong>Scope</strong> determines where a variable can be accessed:</p>
+                        <pre><code># Global scope — accessible everywhere
+total = 0
+
+def add(x):
+    # Local scope — only exists inside this function
+    localVar = x
+    total = total + x    # modifies global
+    return total</code></pre>
+                        <p>Variables created inside functions are <strong>local</strong> — they disappear when the function ends.</p>
+                    </div>
+                    <div class="lesson-section">
+                        <h3>Naming Conventions</h3>
+                        <p>Follow these community standards:</p>
+                        <pre><code># Variables & functions: camelCase or snake_case
+playerScore = 100     # camelCase (JS, Java)
+player_score = 100    # snake_case (Python)
+
+# Constants: UPIERCASE
+MAX_SPEED = 200
+
+# Classes: PascalCase
+class PlayerCharacter: ...</code></pre>
+                    </div>`,
+
+                    `<div class="lesson-section">
+                        <h3>Code Comments</h3>
+                        <p>Add notes to explain your code:</p>
+                        <pre><code># This calculates the tax
+def calcTax(amount, rate):
+    # Tax = price × rate
+    return amount * rate</code></pre>
+                        <p>Good comments explain <strong>why</strong>, not <strong>what</strong>. The code itself shows what it does.</p>
+                    </div>
+                    <div class="lesson-section">
+                        <h3>DRY Principle</h3>
+                        <p><strong>D</strong>on't <strong>R</strong>epeat <strong>Y</strong>ourself. If you're copying code, make a function instead:</p>
+                        <pre><code># Bad — repeating code
+print("Alice: present")
+print("Bob: present")
+print("Charlie: present")
+
+# Good — use a loop
+students = ["Alice", "Bob", "Charlie"]
+for s in students:
+    print(f"{s}: present")</code></pre>
+                    </div>`,
+
+                    `<div class="lesson-section">
+                        <h3>Congratulations!</h3>
+                        <p>You've completed the Fundamentals course! You now understand:</p>
+                        <p>Variables &amp; Data Types · Operators · Conditions · Loops · Functions · Arrays · Dictionaries · Errors &amp; Debugging · Input/Output · Scope &amp; Best Practices</p>
+                        <p>These concepts exist in <strong>every</strong> programming language. Now pick a specific language in "Learn a Language" to dive deeper!</p>
+                    </div>`
+                ]
+            }
+        ];
+
+        // Build topic buttons
+        const grid = GETI("topicsGrid");
+        topics.forEach((topic, idx) => {
+            const btn = document.createElement("button");
+            btn.className = "topic-btn";
+            btn.innerHTML = '<span>' + topic.title + '</span><span class="topic-num">Lesson ' + (idx + 1) + ' of ' + topics.length + '</span>';
+            btn.addEventListener("click", () => pickTopic(idx));
+            grid.appendChild(btn);
+        });
+    </script>
+</body>
+</html>

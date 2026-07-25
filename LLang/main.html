@@ -1,0 +1,1262 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learn a Language</title>
+    <link rel="stylesheet" href="../Start/shared.css">
+    <style>
+        body { padding: 20px; }
+
+        .lang-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            width: 100%;
+            max-width: 600px;
+        }
+
+        .lang-btn {
+            background-color: rgb(30, 30, 40);
+            color: white;
+            font-weight: 600;
+            font-size: 16px;
+            border: 1px solid rgb(60, 60, 80);
+            border-radius: 10px;
+            padding: 28px 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .lang-btn:hover {
+            transform: scale(1.05);
+            background-color: rgb(45, 45, 60);
+            border-color: rgb(80, 80, 100);
+        }
+
+        .lang-btn:active {
+            transform: scale(1.1);
+            background-color: rgb(55, 55, 70);
+        }
+
+        .diff-btns {
+            display: flex;
+            gap: 24px;
+            margin-top: 10px;
+        }
+
+        .diff-btn {
+            background-color: rgb(30, 30, 40);
+            color: white;
+            font-weight: 600;
+            font-size: 18px;
+            border: 1px solid rgb(60, 60, 80);
+            border-radius: 10px;
+            padding: 22px 36px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .diff-btn:hover {
+            transform: scale(1.05);
+            background-color: rgb(45, 45, 60);
+            border-color: rgb(80, 80, 100);
+        }
+
+        .diff-btn:active {
+            transform: scale(1.1);
+            background-color: rgb(55, 55, 70);
+        }
+    </style>
+</head>
+<body>
+    <div id="header">
+        <button class="backBtn" onclick="goBack()">&#8592; Back</button>
+        <h2>Learn a Language</h2>
+        <button id="settingsBtn" onclick="GETI('settingsPanel').style.display='flex'">Settings</button>
+    </div>
+
+    <div id="settingsPanel">
+        <h2>Settings</h2>
+        <button onclick="toggleDarkMode()">Dark Mode</button>
+        <button onclick="toggleLightMode()">Light Mode</button>
+        <button onclick="GETI('settingsPanel').style.display='none'">Close</button>
+    </div>
+
+    <div class="content" id="pageLang">
+        <div class="main-title">Pick a Language!</div>
+        <div class="lang-grid">
+            <button class="lang-btn" onclick="pickLang('js')">JavaScript</button>
+            <button class="lang-btn" onclick="pickLang('py')">Python</button>
+            <button class="lang-btn" onclick="pickLang('html')">HTML</button>
+            <button class="lang-btn" onclick="pickLang('css')">CSS</button>
+            <button class="lang-btn" onclick="pickLang('cpp')">C++</button>
+            <button class="lang-btn" onclick="pickLang('java')">Java</button>
+        </div>
+    </div>
+
+    <div class="content hidden" id="pageDiff">
+        <div class="main-title" id="diffTitle">Choose Difficulty</div>
+        <div class="diff-btns">
+            <button class="diff-btn" onclick="pickDiff('beginner')">Beginner</button>
+            <button class="diff-btn" onclick="pickDiff('advanced')">Advanced</button>
+        </div>
+    </div>
+
+    <div class="content hidden" id="pageLesson">
+        <div class="lesson-title" id="lessonTitle"></div>
+        <div class="lesson" id="lessonContent"></div>
+        <div class="lesson-nav">
+            <button class="nav-btn" id="prevLesson" onclick="changeLesson(-1)">Previous</button>
+            <button class="nav-btn" id="nextLesson" onclick="changeLesson(1)">Next</button>
+        </div>
+    </div>
+
+    <script>
+        function GETI(id) { return document.getElementById(id); }
+
+        function toggleDarkMode() {
+            document.body.style.backgroundColor = "rgb(30, 30, 30)";
+            document.body.style.color = "white";
+        }
+
+        function toggleLightMode() {
+            document.body.style.backgroundColor = "rgb(240, 240, 240)";
+            document.body.style.color = "black";
+        }
+
+        let currentLang = "";
+        let currentDiff = "";
+        let currentLessonIdx = 0;
+
+        function goBack() {
+            if (!GETI("pageLesson").classList.contains("hidden")) {
+                GETI("pageLesson").classList.add("hidden");
+                GETI("pageDiff").classList.remove("hidden");
+                return;
+            }
+            if (!GETI("pageDiff").classList.contains("hidden")) {
+                GETI("pageDiff").classList.add("hidden");
+                GETI("pageLang").classList.remove("hidden");
+                return;
+            }
+            window.location.href = "../index.html";
+        }
+
+        function pickLang(lang) {
+            currentLang = lang;
+            const names = {
+                js: "JavaScript", py: "Python", html: "HTML",
+                css: "CSS", cpp: "C++", java: "Java"
+            };
+            GETI("diffTitle").textContent = "Choose Difficulty — " + names[lang];
+            GETI("pageLang").classList.add("hidden");
+            GETI("pageDiff").classList.remove("hidden");
+        }
+
+        function pickDiff(diff) {
+            currentDiff = diff;
+            currentLessonIdx = 0;
+            renderLesson();
+            GETI("pageDiff").classList.add("hidden");
+            GETI("pageLesson").classList.remove("hidden");
+        }
+
+        function changeLesson(dir) {
+            const lessons = lessonsData[currentLang][currentDiff];
+            currentLessonIdx += dir;
+            if (currentLessonIdx < 0) currentLessonIdx = 0;
+            if (currentLessonIdx >= lessons.length) currentLessonIdx = lessons.length - 1;
+            renderLesson();
+        }
+
+        function renderLesson() {
+            const lessons = lessonsData[currentLang][currentDiff];
+            const lesson = lessons[currentLessonIdx];
+            const names = {
+                js: "JavaScript", py: "Python", html: "HTML",
+                css: "CSS", cpp: "C++", java: "Java"
+            };
+            GETI("lessonTitle").textContent =
+                names[currentLang] + " — " +
+                (currentDiff === "beginner" ? "Beginner" : "Advanced") +
+                " (Lesson " + (currentLessonIdx + 1) + " of " + lessons.length + ")";
+            GETI("lessonContent").innerHTML = lesson;
+            GETI("prevLesson").style.visibility = currentLessonIdx === 0 ? "hidden" : "visible";
+            GETI("nextLesson").style.visibility = currentLessonIdx === lessons.length - 1 ? "hidden" : "visible";
+        }
+
+        const lessonsData = {
+            js: {
+                beginner: [
+                    `<div class="lesson-section">
+                        <h3>What is JavaScript?</h3>
+                        <p>JavaScript is a programming language that makes websites interactive. It runs in your browser and can change content, respond to clicks, and more.</p>
+                    </div>
+                    <div class="lesson-section">
+                        <h3>Variables</h3>
+                        <p>Variables store data. Use <code>let</code> for values that change, and <code>const</code> for values that stay the same.</p>
+                        <pre><code>let name = "Alice";
+const age = 25;
+
+console.log(name);
+console.log(age);</code></pre>
+                    </div>
+                    <div class="lesson-section">
+                        <h3>Data Types</h3>
+                        <p>JavaScript has several types of data:</p>
+                        <p><strong>String</strong> — text in quotes: <code>"Hello"</code></p>
+                        <p><strong>Number</strong> — any number: <code>42</code>, <code>3.14</code></p>
+                        <p><strong>Boolean</strong> — true or false: <code>true</code></p>
+                    </div>`,
+
+                    `<div class="lesson-section">
+                        <h3>Arithmetic</h3>
+                        <p>You can do math with JavaScript:</p>
+                        <pre><code>let a = 10 + 5;   // 15
+let b = 10 - 3;   // 7
+let c = 4 * 2;    // 8
+let d = 20 / 4;   // 5
+let e = 7 % 3;    // 1 (remainder)</code></pre>
+                    </div>
+                    <div class="lesson-section">
+                        <h3>String Concatenation</h3>
+                        <p>Join strings together with <code>+</code> or use template literals with backticks:</p>
+                        <pre><code>let first = "Hello";
+let second = "World";
+let greeting = first + " " + second;
+
+let name = "Alice";
+let msg = \`My name is \${name}\`;</code></pre>
+                    </div>`,
+
+                    `<div class="lesson-section">
+                        <h3>If / Else</h3>
+                        <p>Make decisions in your code:</p>
+                        <pre><code>let age = 18;
+
+if (age >= 18) {
+    console.log("You can vote!");
+} else {
+    console.log("Too young to vote.");
+}</code></pre>
+                    </div>
+                    <div class="lesson-section">
+                        <h3>Comparison Operators</h3>
+                        <p><code>==</code> equals, <code>!=</code> not equals, <code>&gt;</code> greater, <code>&lt;</code> less, <code>&gt;=</code> greater or equal</p>
+                        <pre><code>let x = 5;
+console.log(x == 5);   // true
+console.log(x != 3);   // true
+console.log(x > 10);   // false</code></pre>
+                    </div>`,
+
+                    `<div class="lesson-section">
+                        <h3>Loops</h3>
+                        <p>Repeat code with <code>for</code> and <code>while</code> loops:</p>
+                        <pre><code>for (let i = 0; i < 5; i++) {
+    console.log(i);
+}
+
+let count = 0;
+while (count < 3) {
+    console.log(count);
+    count++;
+}</code></pre>
+                    </div>
+                    <div class="lesson-section">
+                        <h3>Functions</h3>
+                        <p>Functions group reusable code:</p>
+                        <pre><code>function greet(name) {
+    return "Hello, " + name + "!";
+}
+
+let result = greet("Alice");
+console.log(result); // "Hello, Alice!"</code></pre>
+                    </div>`,
+
+                    `<div class="lesson-section">
+                        <h3>Arrays</h3>
+                        <p>Store multiple values in a list:</p>
+                        <pre><code>let fruits = ["apple", "banana", "cherry"];
+console.log(fruits[0]); // "apple"
+fruits.push("date");    // add to end
+console.log(fruits.length); // 4</code></pre>
+                    </div>
+                    <div class="lesson-section">
+                        <h3>Objects</h3>
+                        <p>Store data as key-value pairs:</p>
+                        <pre><code>let person = {
+    name: "Alice",
+    age: 25,
+    job: "Developer"
+};
+
+console.log(person.name); // "Alice"
+person.age = 26;</code></pre>
+                    </div>`,
+
+                    `<div class="lesson-section">
+                        <h3>Congratulations!</h3>
+                        <p>You've completed the JavaScript Beginner course! You now know variables, data types, operators, conditionals, loops, functions, arrays, and objects.</p>
+                        <p>Try the Advanced course to learn more!</p>
+                    </div>`
+                ],
+                advanced: [
+                    `<div class="lesson-section">
+                        <h3>Scope & Hoisting</h3>
+                        <p><code>var</code> is function-scoped, <code>let</code> and <code>const</code> are block-scoped. Variables declared with <code>var</code> are hoisted to the top of their function.</p>
+                        <pre><code>console.log(x); // undefined (hoisted)
+var x = 10;
+
+// let/const are NOT hoisted:
+// console.log(y); // ReferenceError!
+let y = 20;</code></pre>
+                    </div>
+                    <div class="lesson-section">
+                        <h3>Arrow Functions</h3>
+                        <p>Shorter syntax for writing functions:</p>
+                        <pre><code>const add = (a, b) => a + b;
+const square = n => n * n;
+const greet = name => \`Hello, \${name}!\`;</code></pre>
+                    </div>`,
+
+                    `<div class="lesson-section">
+                        <h3>Destructuring</h3>
+                        <p>Extract values from arrays/objects into variables:</p>
+                        <pre><code>const [a, b, c] = [1, 2, 3];
+
+const { name, age } = { name: "Alice", age: 25 };
+console.log(name); // "Alice"</code></pre>
+                    </div>
+                    <div class="lesson-section">
+                        <h3>Spread Operator</h3>
+                        <p>Expand arrays/objects:</p>
+                        <pre><code>const arr1 = [1, 2, 3];
+const arr2 = [...arr1, 4, 5]; // [1,2,3,4,5]
+
+const obj1 = { a: 1, b: 2 };
+const obj2 = { ...obj1, c: 3 };</code></pre>
+                    </div>`,
+
+                    `<div class="lesson-section">
+                        <h3>Promises & Async/Await</h3>
+                        <p>Handle asynchronous operations cleanly:</p>
+                        <pre><code>function fetchData() {
+    return new Promise((resolve, reject) => {
+        setTimeout(() => resolve("Data loaded!"), 1000);
+    });
+}
+
+async function main() {
+    const data = await fetchData();
+    console.log(data);
+}
+
+main();</code></pre>
+                    </div>
+                    <div class="lesson-section">
+                        <h3>Error Handling</h3>
+                        <p>Use try/catch to handle errors gracefully:</p>
+                        <pre><code>try {
+    let result = riskyOperation();
+} catch (error) {
+    console.log("Something went wrong:", error.message);
+} finally {
+    console.log("This always runs");
+}</code></pre>
+                    </div>`,
+
+                    `<div class="lesson-section">
+                        <h3>Map, Filter, Reduce</h3>
+                        <p>Powerful array methods for data processing:</p>
+                        <pre><code>const nums = [1, 2, 3, 4, 5];
+
+const doubled = nums.map(n => n * 2);
+const evens = nums.filter(n => n % 2 === 0);
+const sum = nums.reduce((acc, n) => acc + n, 0);</code></pre>
+                    </div>
+                    <div class="lesson-section">
+                        <h3>Classes</h3>
+                        <p>Create object blueprints with ES6 classes:</p>
+                        <pre><code>class Animal {
+    constructor(name) {
+        this.name = name;
+    }
+    speak() {
+        return \`\${this.name} makes a sound\`;
+    }
+}
+
+class Dog extends Animal {
+    speak() {
+        return \`\${this.name} barks\`;
+    }
+}
+
+const dog = new Dog("Rex");
+console.log(dog.speak());</code></pre>
+                    </div>`,
+
+                    `<div class="lesson-section">
+                        <h3>Modules</h3>
+                        <p>Split code across files with import/export:</p>
+                        <pre><code>// math.js
+export const PI = 3.14159;
+export function add(a, b) { return a + b; }
+
+// main.js
+import { PI, add } from './math.js';
+console.log(PI);
+console.log(add(2, 3));</code></pre>
+                    </div>
+                    <div class="lesson-section">
+                        <h3>Congratulations!</h3>
+                        <p>You've completed the JavaScript Advanced course! You now know scope, arrow functions, destructuring, async/await, array methods, classes, and modules.</p>
+                    </div>`
+                ]
+            },
+            py: {
+                beginner: [
+                    `<div class="lesson-section">
+                        <h3>What is Python?</h3>
+                        <p>Python is a beginner-friendly programming language used for web development, data science, AI, automation, and more. It's known for its clean, readable syntax.</p>
+                    </div>
+                    <div class="lesson-section">
+                        <h3>Variables & Print</h3>
+                        <p>Python doesn't need <code>var</code> or <code>let</code> — just name the variable:</p>
+                        <pre><code>name = "Alice"
+age = 25
+print(name)
+print("I am", age, "years old")</code></pre>
+                    </div>
+                    <div class="lesson-section">
+                        <h3>Data Types</h3>
+                        <p><strong>str</strong> — text: <code>"hello"</code></p>
+                        <p><strong>int</strong> — whole numbers: <code>42</code></p>
+                        <p><strong>float</strong> — decimals: <code>3.14</code></p>
+                        <p><strong>bool</strong> — <code>True</code> or <code>False</code></p>
+                    </div>`,
+
+                    `<div class="lesson-section">
+                        <h3>Arithmetic</h3>
+                        <pre><code>a = 10 + 5    # 15
+b = 10 - 3    # 7
+c = 4 * 2     # 8
+d = 20 / 4    # 5.0
+e = 2 ** 3    # 8 (power)
+f = 7 % 3     # 1 (remainder)</code></pre>
+                    </div>
+                    <div class="lesson-section">
+                        <h3>Strings</h3>
+                        <p>Use f-strings for easy formatting:</p>
+                        <pre><code>name = "Alice"
+greeting = f"Hello, {name}!"
+print(greeting)  # "Hello, Alice!"
+
+length = len("Hello")
+print(length)  # 5</code></pre>
+                    </div>`,
+
+                    `<div class="lesson-section">
+                        <h3>If / Elif / Else</h3>
+                        <pre><code>age = 18
+
+if age >= 18:
+    print("You can vote!")
+elif age >= 16:
+    print("Almost there!")
+else:
+    print("Too young")</code></pre>
+                    </div>
+                    <div class="lesson-section">
+                        <h3>Comparisons</h3>
+                        <p><code>==</code> equals, <code>!=</code> not equals, <code>&gt;</code>, <code>&lt;</code>, <code>&gt;=</code>, <code>&lt;=</code></p>
+                        <pre><code>x = 5
+print(x == 5)   # True
+print(x != 3)   # True
+print(x > 10)   # False</code></pre>
+                    </div>`,
+
+                    `<div class="lesson-section">
+                        <h3>Loops</h3>
+                        <pre><code>for i in range(5):
+    print(i)
+
+count = 0
+while count < 3:
+    print(count)
+    count += 1</code></pre>
+                    </div>
+                    <div class="lesson-section">
+                        <h3>Functions</h3>
+                        <pre><code>def greet(name):
+    return f"Hello, {name}!"
+
+result = greet("Alice")
+print(result)</code></pre>
+                    </div>`,
+
+                    `<div class="lesson-section">
+                        <h3>Lists</h3>
+                        <pre><code>fruits = ["apple", "banana", "cherry"]
+print(fruits[0])   # "apple"
+fruits.append("date")
+print(len(fruits)) # 4</code></pre>
+                    </div>
+                    <div class="lesson-section">
+                        <h3>Dictionaries</h3>
+                        <pre><code>person = {
+    "name": "Alice",
+    "age": 25
+}
+print(person["name"])  # "Alice"
+person["job"] = "Dev"</code></pre>
+                    </div>`,
+
+                    `<div class="lesson-section">
+                        <h3>Congratulations!</h3>
+                        <p>You've completed the Python Beginner course! You now know variables, data types, operators, conditionals, loops, functions, lists, and dictionaries.</p>
+                        <p>Try the Advanced course to learn more!</p>
+                    </div>`
+                ],
+                advanced: [
+                    `<div class="lesson-section">
+                        <h3>List Comprehensions</h3>
+                        <p>Create lists concisely:</p>
+                        <pre><code>squares = [x**2 for x in range(10)]
+evens = [x for x in range(20) if x % 2 == 0]
+
+# equivalent to:
+squares = []
+for x in range(10):
+    squares.append(x**2)</code></pre>
+                    </div>
+                    <div class="lesson-section">
+                        <h3>Lambda Functions</h3>
+                        <p>Anonymous one-line functions:</p>
+                        <pre><code>add = lambda a, b: a + b
+print(add(3, 5))  # 8
+
+nums = [5, 2, 8, 1]
+sorted_nums = sorted(nums, key=lambda x: -x)</code></pre>
+                    </div>`,
+
+                    `<div class="lesson-section">
+                        <h3>Classes & OOP</h3>
+                        <pre><code>class Animal:
+    def __init__(self, name):
+        self.name = name
+
+    def speak(self):
+        return f"{self.name} makes a sound"
+
+class Dog(Animal):
+    def speak(self):
+        return f"{self.name} barks"
+
+dog = Dog("Rex")
+print(dog.speak())</code></pre>
+                    </div>
+                    <div class="lesson-section">
+                        <h3>Decorators</h3>
+                        <p>Modify function behavior:</p>
+                        <pre><code>import time
+
+def timer(func):
+    def wrapper(*args, **kwargs):
+        start = time.time()
+        result = func(*args, **kwargs)
+        print(f"Time: {time.time()-start:.2f}s")
+        return result
+    return wrapper
+
+@timer
+def slow():
+    time.sleep(1)</code></pre>
+                    </div>`,
+
+                    `<div class="lesson-section">
+                        <h3>Error Handling</h3>
+                        <pre><code>try:
+    result = 10 / 0
+except ZeroDivisionError:
+    print("Cannot divide by zero!")
+except Exception as e:
+    print(f"Error: {e}")
+finally:
+    print("This always runs")</code></pre>
+                    </div>
+                    <div class="lesson-section">
+                        <h3>Generators</h3>
+                        <p>Lazily produce values with <code>yield</code>:</p>
+                        <pre><code>def countdown(n):
+    while n > 0:
+        yield n
+        n -= 1
+
+for num in countdown(5):
+    print(num)</code></pre>
+                    </div>`,
+
+                    `<div class="lesson-section">
+                        <h3>File I/O</h3>
+                        <pre><code>with open("data.txt", "w") as f:
+    f.write("Hello, file!")
+
+with open("data.txt", "r") as f:
+    content = f.read()
+    print(content)</code></pre>
+                    </div>
+                    <div class="lesson-section">
+                        <h3>Congratulations!</h3>
+                        <p>You've completed the Python Advanced course! You now know list comprehensions, lambdas, OOP, decorators, error handling, generators, and file I/O.</p>
+                    </div>`
+                ]
+            },
+            html: {
+                beginner: [
+                    `<div class="lesson-section">
+                        <h3>What is HTML?</h3>
+                        <p>HTML (HyperText Markup Language) is the structure of every web page. It uses "tags" to define elements like headings, paragraphs, links, and images.</p>
+                    </div>
+                    <div class="lesson-section">
+                        <h3>Basic Structure</h3>
+                        <pre><code>&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+    &lt;title&gt;My Page&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;h1&gt;Hello, World!&lt;/h1&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+                    </div>
+                    <div class="lesson-section">
+                        <h3>Headings &amp; Paragraphs</h3>
+                        <p>Use <code>&lt;h1&gt;</code> to <code>&lt;h6&gt;</code> for headings (h1 is largest).</p>
+                        <p>Use <code>&lt;p&gt;</code> for paragraphs.</p>
+                        <pre><code>&lt;h1&gt;Big Heading&lt;/h1&gt;
+&lt;h2&gt;Smaller Heading&lt;/h2&gt;
+&lt;p&gt;This is a paragraph.&lt;/p&gt;</code></pre>
+                    </div>`,
+
+                    `<div class="lesson-section">
+                        <h3>Links</h3>
+                        <p>Create links with the <code>&lt;a&gt;</code> tag:</p>
+                        <pre><code>&lt;a href="https://google.com"&gt;Visit Google&lt;/a&gt;
+&lt;a href="about.html"&gt;About Us&lt;/a&gt;</code></pre>
+                    </div>
+                    <div class="lesson-section">
+                        <h3>Images</h3>
+                        <p>Add images with the <code>&lt;img&gt;</code> tag (self-closing):</p>
+                        <pre><code>&lt;img src="photo.jpg" alt="A nice photo"&gt;
+&lt;img src="logo.png" alt="Logo" width="100"&gt;</code></pre>
+                    </div>`,
+
+                    `<div class="lesson-section">
+                        <h3>Lists</h3>
+                        <pre><code>&lt;ul&gt;
+    &lt;li&gt;Apples&lt;/li&gt;
+    &lt;li&gt;Bananas&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;ol&gt;
+    &lt;li&gt;First&lt;/li&gt;
+    &lt;li&gt;Second&lt;/li&gt;
+&lt;/ol&gt;</code></pre>
+                    </div>
+                    <div class="lesson-section">
+                        <h3>Divs &amp; Spans</h3>
+                        <p><code>&lt;div&gt;</code> is a block container, <code>&lt;span&gt;</code> is inline:</p>
+                        <pre><code>&lt;div class="card"&gt;
+    &lt;h2&gt;Title&lt;/h2&gt;
+    &lt;p&gt;Some &lt;span class="bold"&gt;bold&lt;/span&gt; text&lt;/p&gt;
+&lt;/div&gt;</code></pre>
+                    </div>`,
+
+                    `<div class="lesson-section">
+                        <h3>Forms</h3>
+                        <p>Collect user input with forms:</p>
+                        <pre><code>&lt;form action="/submit" method="POST"&gt;
+    &lt;input type="text" name="username" placeholder="Name"&gt;
+    &lt;input type="password" name="pass" placeholder="Pass"&gt;
+    &lt;button type="submit"&gt;Submit&lt;/button&gt;
+&lt;/form&gt;</code></pre>
+                    </div>`,
+
+                    `<div class="lesson-section">
+                        <h3>Congratulations!</h3>
+                        <p>You've completed the HTML Beginner course! You know headings, paragraphs, links, images, lists, divs, spans, and forms.</p>
+                    </div>`
+                ],
+                advanced: [
+                    `<div class="lesson-section">
+                        <h3>Semantic HTML</h3>
+                        <p>Use meaningful tags instead of generic <code>&lt;div&gt;</code>:</p>
+                        <pre><code>&lt;header&gt;
+    &lt;nav&gt;&lt;a href="/"&gt;Home&lt;/a&gt;&lt;/nav&gt;
+&lt;/header&gt;
+&lt;main&gt;
+    &lt;article&gt;
+        &lt;h1&gt;Title&lt;/h1&gt;
+        &lt;section&gt;Content&lt;/section&gt;
+    &lt;/article&gt;
+    &lt;aside&gt;Sidebar&lt;/aside&gt;
+&lt;/main&gt;
+&lt;footer&gt;Copyright 2026&lt;/footer&gt;</code></pre>
+                    </div>
+                    <div class="lesson-section">
+                        <h3>Accessibility</h3>
+                        <p>Make your site usable by everyone:</p>
+                        <pre><code>&lt;img src="pic.jpg" alt="Description"&gt;
+&lt;button aria-label="Close menu"&gt;X&lt;/button&gt;
+&lt;label for="email"&gt;Email&lt;/label&gt;
+&lt;input id="email" type="email" required&gt;</code></pre>
+                    </div>`,
+
+                    `<div class="lesson-section">
+                        <h3>Tables</h3>
+                        <pre><code>&lt;table&gt;
+    &lt;thead&gt;
+        &lt;tr&gt;&lt;th&gt;Name&lt;/th&gt;&lt;th&gt;Age&lt;/th&gt;&lt;/tr&gt;
+    &lt;/thead&gt;
+    &lt;tbody&gt;
+        &lt;tr&gt;&lt;td&gt;Alice&lt;/td&gt;&lt;td&gt;25&lt;/td&gt;&lt;/tr&gt;
+    &lt;/tbody&gt;
+&lt;/table&gt;</code></pre>
+                    </div>
+                    <div class="lesson-section">
+                        <h3>Audio &amp; Video</h3>
+                        <pre><code>&lt;video controls width="400"&gt;
+    &lt;source src="movie.mp4" type="video/mp4"&gt;
+&lt;/video&gt;
+
+&lt;audio controls&gt;
+    &lt;source src="song.mp3" type="audio/mpeg"&gt;
+&lt;/audio&gt;</code></pre>
+                    </div>`,
+
+                    `<div class="lesson-section">
+                        <h3>Meta Tags &amp; SEO</h3>
+                        <pre><code>&lt;meta charset="UTF-8"&gt;
+&lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;
+&lt;meta name="description" content="My website description"&gt;
+&lt;meta name="keywords" content="html, web, coding"&gt;</code></pre>
+                    </div>
+                    <div class="lesson-section">
+                        <h3>Data Attributes</h3>
+                        <p>Store custom data in HTML elements:</p>
+                        <pre><code>&lt;div data-user-id="42" data-role="admin"&gt;
+    User Info
+&lt;/div&gt;
+
+&lt;script&gt;
+    const el = document.querySelector('[data-user-id]');
+    console.log(el.dataset.userId); // "42"
+&lt;/script&gt;</code></pre>
+                    </div>`,
+
+                    `<div class="lesson-section">
+                        <h3>Congratulations!</h3>
+                        <p>You've completed the HTML Advanced course! You know semantic HTML, accessibility, tables, media, meta tags, and data attributes.</p>
+                    </div>`
+                ]
+            },
+            css: {
+                beginner: [
+                    `<div class="lesson-section">
+                        <h3>What is CSS?</h3>
+                        <p>CSS (Cascading Style Sheets) controls how HTML elements look — colors, fonts, spacing, layout, and more.</p>
+                    </div>
+                    <div class="lesson-section">
+                        <h3>Basic Syntax</h3>
+                        <pre><code>selector {
+    property: value;
+}
+
+h1 {
+    color: blue;
+    font-size: 24px;
+}</code></pre>
+                    </div>
+                    <div class="lesson-section">
+                        <h3>Selectors</h3>
+                        <p><strong>Element</strong> — <code>p { }</code></p>
+                        <p><strong>Class</strong> — <code>.box { }</code></p>
+                        <p><strong>ID</strong> — <code>#main { }</code></p>
+                        <pre><code>p { color: gray; }
+.box { background: yellow; }
+#main { width: 800px; }</code></pre>
+                    </div>`,
+
+                    `<div class="lesson-section">
+                        <h3>Colors &amp; Backgrounds</h3>
+                        <pre><code>color: red;
+color: #ff0000;
+color: rgb(255, 0, 0);
+background-color: #f0f0f0;
+background-image: url("image.jpg");</code></pre>
+                    </div>
+                    <div class="lesson-section">
+                        <h3>Fonts</h3>
+                        <pre><code>font-family: Arial, sans-serif;
+font-size: 16px;
+font-weight: bold;
+text-align: center;
+text-decoration: underline;</code></pre>
+                    </div>`,
+
+                    `<div class="lesson-section">
+                        <h3>Box Model</h3>
+                        <p>Every element has padding, border, and margin:</p>
+                        <pre><code>.box {
+    width: 200px;
+    padding: 10px;
+    border: 2px solid black;
+    margin: 20px;
+}</code></pre>
+                    </div>
+                    <div class="lesson-section">
+                        <h3>Display</h3>
+                        <p><code>block</code> takes full width, <code>inline</code> fits content, <code>inline-block</code> is inlined but allows sizing.</p>
+                        <pre><code>.hidden { display: none; }
+.inline { display: inline; }
+.block { display: block; }</code></pre>
+                    </div>`,
+
+                    `<div class="lesson-section">
+                        <h3>Congratulations!</h3>
+                        <p>You've completed the CSS Beginner course! You know selectors, colors, fonts, the box model, and display types.</p>
+                    </div>`
+                ],
+                advanced: [
+                    `<div class="lesson-section">
+                        <h3>Flexbox</h3>
+                        <p>Powerful one-dimensional layout:</p>
+                        <pre><code>.container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+}
+
+.item {
+    flex: 1; /* grow to fill space */
+}</code></pre>
+                    </div>
+                    <div class="lesson-section">
+                        <h3>Grid</h3>
+                        <p>Two-dimensional layout system:</p>
+                        <pre><code>.grid {
+    display: grid;
+    grid-template-columns: 1fr 2fr 1fr;
+    grid-gap: 15px;
+}
+
+.full-width {
+    grid-column: 1 / -1;
+}</code></pre>
+                    </div>`,
+
+                    `<div class="lesson-section">
+                        <h3>Position</h3>
+                        <pre><code>.relative { position: relative; }
+.absolute {
+    position: absolute;
+    top: 10px;
+    right: 20px;
+}
+.fixed {
+    position: fixed;
+    bottom: 0;
+}</code></pre>
+                    </div>
+                    <div class="lesson-section">
+                        <h3>Transitions &amp; Animations</h3>
+                        <pre><code>.btn {
+    transition: transform 0.3s ease;
+}
+.btn:hover {
+    transform: scale(1.1);
+}
+
+@keyframes slide {
+    from { transform: translateX(-100%); }
+    to { transform: translateX(0); }
+}
+.animate { animation: slide 0.5s ease; }</code></pre>
+                    </div>`,
+
+                    `<div class="lesson-section">
+                        <h3>Media Queries</h3>
+                        <p>Make designs responsive:</p>
+                        <pre><code>.sidebar {
+    width: 250px;
+}
+
+@media (max-width: 768px) {
+    .sidebar {
+        display: none;
+    }
+    .main {
+        width: 100%;
+    }
+}</code></pre>
+                    </div>
+                    <div class="lesson-section">
+                        <h3>CSS Variables</h3>
+                        <pre><code>:root {
+    --primary: #007bff;
+    --spacing: 16px;
+}
+
+.btn {
+    background: var(--primary);
+    padding: var(--spacing);
+}</code></pre>
+                    </div>`,
+
+                    `<div class="lesson-section">
+                        <h3>Congratulations!</h3>
+                        <p>You've completed the CSS Advanced course! You know Flexbox, Grid, positioning, transitions, media queries, and CSS variables.</p>
+                    </div>`
+                ]
+            },
+            cpp: {
+                beginner: [
+                    `<div class="lesson-section">
+                        <h3>What is C++?</h3>
+                        <p>C++ is a high-performance programming language used for system software, game engines, browsers, and competitive programming. It's fast and powerful.</p>
+                    </div>
+                    <div class="lesson-section">
+                        <h3>Hello World</h3>
+                        <pre><code>#include &lt;iostream&gt;
+using namespace std;
+
+int main() {
+    cout &lt;&lt; "Hello, World!" &lt;&lt; endl;
+    return 0;
+}</code></pre>
+                    </div>
+                    <div class="lesson-section">
+                        <h3>Variables</h3>
+                        <pre><code>int age = 25;
+double pi = 3.14;
+char letter = 'A';
+string name = "Alice";
+bool isCool = true;</code></pre>
+                    </div>`,
+
+                    `<div class="lesson-section">
+                        <h3>Input / Output</h3>
+                        <pre><code>int age;
+cout &lt;&lt; "Enter your age: ";
+cin &gt;&gt; age;
+cout &lt;&lt; "You are " &lt;&lt; age &lt;&lt; " years old" &lt;&lt; endl;</code></pre>
+                    </div>
+                    <div class="lesson-section">
+                        <h3>Arithmetic</h3>
+                        <pre><code>int a = 10 + 5;   // 15
+int b = 10 - 3;   // 7
+int c = 4 * 2;    // 8
+int d = 20 / 4;   // 5
+int e = 7 % 3;    // 1</code></pre>
+                    </div>`,
+
+                    `<div class="lesson-section">
+                        <h3>If / Else</h3>
+                        <pre><code>int age = 18;
+
+if (age >= 18) {
+    cout &lt;&lt; "Adult" &lt;&lt; endl;
+} else {
+    cout &lt;&lt; "Minor" &lt;&lt; endl;
+}</code></pre>
+                    </div>
+                    <div class="lesson-section">
+                        <h3>Loops</h3>
+                        <pre><code>for (int i = 0; i < 5; i++) {
+    cout &lt;&lt; i &lt;&lt; endl;
+}
+
+int x = 0;
+while (x < 3) {
+    cout &lt;&lt; x &lt;&lt; endl;
+    x++;
+}</code></pre>
+                    </div>`,
+
+                    `<div class="lesson-section">
+                        <h3>Functions</h3>
+                        <pre><code>int add(int a, int b) {
+    return a + b;
+}
+
+void greet(string name) {
+    cout &lt;&lt; "Hello, " &lt;&lt; name &lt;&lt; endl;
+}
+
+int main() {
+    cout &lt;&lt; add(3, 5) &lt;&lt; endl;
+    greet("Alice");
+}</code></pre>
+                    </div>`,
+
+                    `<div class="lesson-section">
+                        <h3>Congratulations!</h3>
+                        <p>You've completed the C++ Beginner course! You know variables, I/O, operators, conditionals, loops, and functions.</p>
+                    </div>`
+                ],
+                advanced: [
+                    `<div class="lesson-section">
+                        <h3>Classes &amp; Objects</h3>
+                        <pre><code>class Animal {
+public:
+    string name;
+    Animal(string n) : name(n) {}
+    virtual void speak() {
+        cout &lt;&lt; name &lt;&lt; " makes a sound" &lt;&lt; endl;
+    }
+};
+
+class Dog : public Animal {
+public:
+    Dog(string n) : Animal(n) {}
+    void speak() override {
+        cout &lt;&lt; name &lt;&lt; " barks" &lt;&lt; endl;
+    }
+};</code></pre>
+                    </div>
+                    <div class="lesson-section">
+                        <h3>Pointers</h3>
+                        <pre><code>int x = 10;
+int* ptr = &amp;x;     // ptr points to x
+cout &lt;&lt; *ptr &lt;&lt; endl; // 10 (dereference)
+*ptr = 20;           // x is now 20</code></pre>
+                    </div>`,
+
+                    `<div class="lesson-section">
+                        <h3>References</h3>
+                        <pre><code>void increment(int&amp; n) {
+    n++;
+}
+
+int main() {
+    int x = 5;
+    increment(x); // x is now 6
+}</code></pre>
+                    </div>
+                    <div class="lesson-section">
+                        <h3>STL Containers</h3>
+                        <pre><code>#include &lt;vector&gt;
+#include &lt;map&gt;
+#include &lt;set&gt;
+
+vector&lt;int&gt; nums = {1, 2, 3};
+nums.push_back(4);
+
+map&lt;string, int&gt; ages;
+ages["Alice"] = 25;
+
+set&lt;int&gt; unique = {1, 2, 2, 3};</code></pre>
+                    </div>`,
+
+                    `<div class="lesson-section">
+                        <h3>Smart Pointers</h3>
+                        <pre><code>#include &lt;memory&gt;
+
+auto ptr = make_shared&lt;string&gt;("Hello");
+auto uptr = make_unique&lt;int&gt;(42);
+
+cout &lt;&lt; *ptr &lt;&lt; endl;
+cout &lt;&lt; *uptr &lt;&lt; endl;</code></pre>
+                    </div>
+                    <div class="lesson-section">
+                        <h3>Lambda Expressions</h3>
+                        <pre><code>auto add = [](int a, int b) { return a + b; };
+cout &lt;&lt; add(3, 5) &lt;&lt; endl;
+
+vector&lt;int&gt; v = {3, 1, 4, 2};
+sort(v.begin(), v.end(), [](int a, int b) {
+    return a > b;
+});</code></pre>
+                    </div>`,
+
+                    `<div class="lesson-section">
+                        <h3>Congratulations!</h3>
+                        <p>You've completed the C++ Advanced course! You know OOP, pointers, references, STL, smart pointers, and lambdas.</p>
+                    </div>`
+                ]
+            },
+            java: {
+                beginner: [
+                    `<div class="lesson-section">
+                        <h3>What is Java?</h3>
+                        <p>Java is a widely-used language for Android apps, enterprise software, and web backends. It runs on the Java Virtual Machine (JVM).</p>
+                    </div>
+                    <div class="lesson-section">
+                        <h3>Hello World</h3>
+                        <pre><code>public class Main {
+    public static void main(String[] args) {
+        System.out.println("Hello, World!");
+    }
+}</code></pre>
+                    </div>
+                    <div class="lesson-section">
+                        <h3>Variables</h3>
+                        <pre><code>int age = 25;
+double pi = 3.14;
+char letter = 'A';
+String name = "Alice";
+boolean isCool = true;</code></pre>
+                    </div>`,
+
+                    `<div class="lesson-section">
+                        <h3>Input / Output</h3>
+                        <pre><code>import java.util.Scanner;
+
+Scanner sc = new Scanner(System.in);
+System.out.print("Enter name: ");
+String name = sc.nextLine();
+System.out.println("Hello, " + name);</code></pre>
+                    </div>
+                    <div class="lesson-section">
+                        <h3>Arithmetic</h3>
+                        <pre><code>int a = 10 + 5;   // 15
+int b = 10 - 3;   // 7
+int c = 4 * 2;    // 8
+int d = 20 / 4;   // 5
+int e = 7 % 3;    // 1</code></pre>
+                    </div>`,
+
+                    `<div class="lesson-section">
+                        <h3>If / Else</h3>
+                        <pre><code>int age = 18;
+
+if (age >= 18) {
+    System.out.println("Adult");
+} else {
+    System.out.println("Minor");
+}</code></pre>
+                    </div>
+                    <div class="lesson-section">
+                        <h3>Loops</h3>
+                        <pre><code>for (int i = 0; i < 5; i++) {
+    System.out.println(i);
+}
+
+int x = 0;
+while (x < 3) {
+    System.out.println(x);
+    x++;
+}</code></pre>
+                    </div>`,
+
+                    `<div class="lesson-section">
+                        <h3>Methods</h3>
+                        <pre><code>public static int add(int a, int b) {
+    return a + b;
+}
+
+public static void greet(String name) {
+    System.out.println("Hello, " + name);
+}
+
+public static void main(String[] args) {
+    System.out.println(add(3, 5));
+    greet("Alice");
+}</code></pre>
+                    </div>`,
+
+                    `<div class="lesson-section">
+                        <h3>Congratulations!</h3>
+                        <p>You've completed the Java Beginner course! You know variables, I/O, operators, conditionals, loops, and methods.</p>
+                    </div>`
+                ],
+                advanced: [
+                    `<div class="lesson-section">
+                        <h3>Classes &amp; Inheritance</h3>
+                        <pre><code>class Animal {
+    String name;
+    Animal(String name) { this.name = name; }
+    void speak() {
+        System.out.println(name + " makes a sound");
+    }
+}
+
+class Dog extends Animal {
+    Dog(String name) { super(name); }
+    void speak() {
+        System.out.println(name + " barks");
+    }
+}</code></pre>
+                    </div>
+                    <div class="lesson-section">
+                        <h3>Interfaces</h3>
+                        <pre><code>interface Drawable {
+    void draw();
+}
+
+class Circle implements Drawable {
+    public void draw() {
+        System.out.println("Drawing circle");
+    }
+}</code></pre>
+                    </div>`,
+
+                    `<div class="lesson-section">
+                        <h3>Generics</h3>
+                        <pre><code>class Box&lt;T&gt; {
+    T value;
+    Box(T value) { this.value = value; }
+    T get() { return value; }
+}
+
+Box&lt;String&gt; box = new Box&lt;&gt;("Hello");
+Box&lt;Integer&gt; num = new Box&lt;&gt;(42);</code></pre>
+                    </div>
+                    <div class="lesson-section">
+                        <h3>Collections</h3>
+                        <pre><code>import java.util.*;
+
+List&lt;String&gt; list = new ArrayList&lt;&gt;();
+list.add("Alice");
+list.add("Bob");
+
+Map&lt;String, Integer&gt; map = new HashMap&lt;&gt;();
+map.put("Alice", 25);</code></pre>
+                    </div>`,
+
+                    `<div class="lesson-section">
+                        <h3>Lambda Expressions</h3>
+                        <pre><code>List&lt;Integer&gt; nums = List.of(1, 2, 3, 4, 5);
+
+nums.forEach(n -> System.out.println(n));
+
+List&lt;Integer&gt; doubled = nums.stream()
+    .map(n -> n * 2)
+    .toList();</code></pre>
+                    </div>
+                    <div class="lesson-section">
+                        <h3>Try-with-Resources</h3>
+                        <pre><code>try (BufferedReader br = new BufferedReader(
+        new FileReader("file.txt"))) {
+    String line;
+    while ((line = br.readLine()) != null) {
+        System.out.println(line);
+    }
+} catch (IOException e) {
+    e.printStackTrace();
+}</code></pre>
+                    </div>`,
+
+                    `<div class="lesson-section">
+                        <h3>Congratulations!</h3>
+                        <p>You've completed the Java Advanced course! You know OOP, interfaces, generics, collections, lambdas, and exception handling.</p>
+                    </div>`
+                ]
+            }
+        };
+    </script>
+</body>
+</html>

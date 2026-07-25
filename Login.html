@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="Start/style.css">
+    <title>Login - The Experience Of Coding</title>
+    <style>
+        .form-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            align-items: center;
+        }
+        .form-container input {
+            padding: 10px 20px;
+            font-size: 16px;
+            border: 2px solid black;
+            border-radius: 5px;
+            background-color: rgb(0, 0, 0);
+            color: white;
+            font-weight: 700;
+            text-align: center;
+            width: 250px;
+        }
+        .form-container input::placeholder {
+            color: rgb(150, 150, 150);
+        }
+        .form-container button {
+            padding: 10px 40px;
+            font-size: 16px;
+            border: 2px solid black;
+            border-radius: 5px;
+            background-color: rgb(0, 0, 0);
+            color: white;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .form-container button:hover {
+            transform: scale(1.10);
+            background-color: rgb(20, 20, 20);
+        }
+        .form-container button:active {
+            transform: scale(1.20);
+            background-color: rgb(40, 40, 40);
+        }
+        .form-container a {
+            color: white;
+            font-size: 14px;
+            text-decoration: underline;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <img id="logo" class="abs" src="Logo.png" alt="Logo">
+    <h1 id="title" class="abs">Login</h1>
+    <div class="form-container">
+        <input type="text" id="username" placeholder="Username">
+        <input type="password" id="password" placeholder="Password">
+        <button id="loginBtn">Login</button>
+        <a onclick="moveHtml('Signup.html')">Don't have an account? Sign Up</a>
+        <a onclick="moveHtml('index.html')">Back to Home</a>
+    </div>
+    <script src="Start/main.js"></script>
+</body>
+</html>

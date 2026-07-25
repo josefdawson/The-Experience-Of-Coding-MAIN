@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Code Share</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background-color: rgb(22, 22, 28);
+            color: white;
+            min-height: 100vh;
+        }
+
+        #header {
+            width: 100%;
+            height: 50px;
+            background-color: rgb(12, 12, 15);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            border-bottom: 1px solid rgb(40, 40, 50);
+        }
+
+        #header h2 { color: white; font-size: 16px; font-weight: 600; }
+        #header .header-btns { display: flex; gap: 15px; }
+
+        #header button {
+            background: none;
+            border: none;
+            color: rgb(180, 180, 200);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            padding: 6px 12px;
+            border-radius: 6px;
+        }
+
+        #header button:hover { transform: scale(1.05); color: white; background-color: rgb(40, 40, 50); }
+
+        #container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
+
+        #postForm {
+            background-color: rgb(25, 25, 25);
+            border: 1px solid rgb(50, 50, 50);
+            border-radius: 8px;
+            padding: 25px;
+            margin-bottom: 30px;
+            display: none;
+        }
+
+        #postForm h3 { margin-bottom: 15px; }
+
+        #postForm input, #postForm select, #postForm textarea {
+            width: 100%;
+            padding: 10px 12px;
+            margin-bottom: 12px;
+            background-color: rgb(30, 30, 30);
+            color: white;
+            border: 1px solid rgb(70, 70, 70);
+            border-radius: 4px;
+            font-size: 14px;
+            font-family: Arial, sans-serif;
+            outline: none;
+        }
+
+        #postForm input:focus, #postForm select:focus, #postForm textarea:focus {
+            border-color: rgb(0, 120, 212);
+        }
+
+        #postForm select { cursor: pointer; }
+        #postForm select option { background-color: rgb(30, 30, 30); }
+
+        #postForm textarea {
+            height: 200px;
+            font-family: 'Consolas', monospace;
+            font-size: 14px;
+            resize: vertical;
+            white-space: pre;
+            tab-size: 4;
+        }
+
+        #postForm .btn-row { display: flex; gap: 10px; }
+
+        .submit-btn {
+            padding: 10px 30px;
+            background-color: rgb(0, 120, 212);
+            color: white;
+            font-weight: 700;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.2s;
+        }
+
+        .submit-btn:hover { background-color: rgb(0, 100, 190); }
+
+        .cancel-btn {
+            padding: 10px 30px;
+            background-color: rgb(80, 80, 80);
+            color: white;
+            font-weight: 700;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.2s;
+        }
+
+        .cancel-btn:hover { background-color: rgb(100, 100, 100); }
+
+        #posts { display: flex; flex-direction: column; gap: 16px; }
+
+        .post-card {
+            background-color: rgb(28, 28, 38);
+            border: 1px solid rgb(45, 45, 55);
+            border-radius: 10px;
+            padding: 20px;
+        }
+
+        .post-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .post-author {
+            font-size: 12px;
+            color: rgb(150, 150, 150);
+        }
+
+        .delete-btn {
+            background: none;
+            border: none;
+            color: rgb(150, 150, 150);
+            cursor: pointer;
+            font-size: 12px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+
+        .delete-btn:hover { color: rgb(255, 80, 80); background-color: rgba(255, 80, 80, 0.1); }
+
+        .post-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .post-lang {
+            display: inline-block;
+            padding: 3px 10px;
+            background-color: rgb(0, 120, 212);
+            color: white;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .code-block {
+            position: relative;
+            background-color: rgb(15, 15, 15);
+            border: 1px solid rgb(50, 50, 50);
+            border-radius: 6px;
+            margin-bottom: 12px;
+            overflow: hidden;
+        }
+
+        .code-btns {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            display: flex;
+            gap: 6px;
+            z-index: 2;
+        }
+
+        .code-btn {
+            padding: 5px 12px;
+            background-color: rgb(60, 60, 60);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 700;
+            transition: background-color 0.2s;
+        }
+
+        .code-btn:hover { background-color: rgb(80, 80, 80); }
+        .code-btn.run-btn:hover { background-color: rgb(0, 150, 0); }
+
+        .code-content {
+            padding: 15px;
+            font-family: 'Consolas', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            color: white;
+        }
+
+        .output-block {
+            display: none;
+            background-color: rgb(10, 10, 10);
+            border: 1px solid rgb(50, 50, 50);
+            border-radius: 6px;
+            margin-bottom: 12px;
+            padding: 12px 15px;
+            font-family: 'Consolas', monospace;
+            font-size: 13px;
+            color: rgb(0, 255, 0);
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .output-label {
+            font-size: 11px;
+            color: rgb(120, 120, 120);
+            margin-bottom: 6px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .post-description {
+            font-size: 14px;
+            color: rgb(180, 180, 180);
+            line-height: 1.5;
+            margin-bottom: 12px;
+        }
+
+        .post-actions {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            padding-top: 10px;
+            border-top: 1px solid rgb(50, 50, 50);
+        }
+
+        .action-btn {
+            background: none;
+            border: none;
+            color: rgb(150, 150, 150);
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+
+        .action-btn:hover { color: white; background-color: rgba(255, 255, 255, 0.05); }
+        .action-btn.liked { color: rgb(255, 80, 80); }
+
+        .comments-section {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid rgb(50, 50, 50);
+            display: none;
+        }
+
+        .comments-section.open { display: block; }
+
+        .comment {
+            padding: 8px 0;
+            border-bottom: 1px solid rgb(40, 40, 40);
+            font-size: 13px;
+        }
+
+        .comment:last-child { border-bottom: none; }
+        .comment-author { font-weight: 700; color: rgb(0, 120, 212); }
+        .comment-text { color: rgb(180, 180, 180); margin-left: 8px; }
+
+        .comment-input-row {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .comment-input-row input {
+            flex: 1;
+            padding: 8px 12px;
+            background-color: rgb(30, 30, 30);
+            color: white;
+            border: 1px solid rgb(70, 70, 70);
+            border-radius: 4px;
+            font-size: 13px;
+            outline: none;
+        }
+
+        .comment-input-row input:focus { border-color: rgb(0, 120, 212); }
+
+        .comment-input-row button {
+            padding: 8px 16px;
+            background-color: rgb(0, 120, 212);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .kw { color: rgb(56, 164, 234); }
+        .str { color: rgb(204, 120, 50); }
+        .num { color: rgb(181, 137, 0); }
+        .cmt { color: rgb(87, 166, 74); font-style: italic; }
+        .tag { color: rgb(204, 120, 50); }
+        .attr { color: rgb(181, 137, 0); }
+        .val { color: rgb(204, 120, 50); }
+        .fn { color: rgb(220, 220, 170); }
+        .bool { color: rgb(56, 164, 234); }
+        .type { color: rgb(0, 188, 212); }
+        .dec { color: rgb(204, 120, 50); }
+
+        #loading { text-align: center; padding: 40px; color: rgb(150, 150, 150); }
+        #noPosts { text-align: center; padding: 40px; color: rgb(100, 100, 100); }
+
+        #toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 10px 25px;
+            background-color: rgb(0, 180, 0);
+            color: white;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 14px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 100;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <header id="header">
+        <button onclick="window.location.href='../index.html'">&#8592; Back</button>
+        <h2>Code Share</h2>
+        <div class="header-btns">
+            <button id="newPostBtn">+ New Post</button>
+        </div>
+    </header>
+
+    <div id="container">
+        <div id="postForm">
+            <h3>Share Your Code</h3>
+            <input type="text" id="postTitle" placeholder="Title">
+            <input type="text" id="postDesc" placeholder="Description">
+            <select id="postLang">
+                <option value="JavaScript">JavaScript</option>
+                <option value="HTML">HTML</option>
+                <option value="CSS">CSS</option>
+                <option value="Python">Python</option>
+                <option value="C#">C#</option>
+                <option value="C++">C++</option>
+                <option value="Java">Java</option>
+                <option value="TypeScript">TypeScript</option>
+                <option value="PHP">PHP</option>
+                <option value="Ruby">Ruby</option>
+                <option value="Go">Go</option>
+                <option value="Rust">Rust</option>
+                <option value="Swift">Swift</option>
+                <option value="Kotlin">Kotlin</option>
+                <option value="SQL">SQL</option>
+                <option value="Other">Other</option>
+            </select>
+            <textarea id="postCode" placeholder="Paste your code here..."></textarea>
+            <div class="btn-row">
+                <button class="cancel-btn" id="cancelPost">Cancel</button>
+                <button class="submit-btn" id="submitPost">Post</button>
+            </div>
+        </div>
+
+        <div id="posts">
+            <div id="loading">Loading posts...</div>
+        </div>
+    </div>
+
+    <div id="toast"></div>
+
+    <script>
+        const SUPABASE_URL = "https://pkozsixsrbnvmsorqcam.supabase.co";
+        const SUPABASE_KEY = "sb_publishable_r7bnIb_lH_BhtZmyd8o8JA_xS3ORsrp";
+        const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        const currentUser = localStorage.getItem("username") || "Anonymous";
+
+        function escapeHtml(text) {
+            return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        }
+
+        function highlightCode(code, lang) {
+            let e = escapeHtml(code);
+            const l = (lang || "").toLowerCase();
+
+            if (l === "javascript" || l === "js" || l === "typescript" || l === "ts") {
+                e = e.replace(/(\/\/.*$)/gm, '<span class="cmt">$1</span>')
+                    .replace(/(\/\*[\s\S]*?\*\/)/g, '<span class="cmt">$1</span>')
+                    .replace(/\b(var|let|const|function|return|if|else|for|while|do|switch|case|break|continue|new|this|class|extends|import|export|from|default|try|catch|finally|throw|async|await|yield|typeof|instanceof|in|of|interface|type|enum)\b/g, '<span class="kw">$1</span>')
+                    .replace(/\b(true|false|null|undefined|NaN|Infinity)\b/g, '<span class="bool">$1</span>')
+                    .replace(/\b(\d+\.?\d*)\b/g, '<span class="num">$1</span>')
+                    .replace(/(".*?")/g, '<span class="str">$1</span>')
+                    .replace(/('.*?')/g, '<span class="str">$1</span>')
+                    .replace(/(`.*?`)/g, '<span class="str">$1</span>');
+            } else if (l === "html") {
+                e = e.replace(/(&lt;!--[\s\S]*?--&gt;)/g, '<span class="cmt">$1</span>')
+                    .replace(/(&lt;\/?)([\w-]+)/g, '$1<span class="tag">$2</span>')
+                    .replace(/\b([\w-]+)(=)/g, '<span class="attr">$1</span>$2')
+                    .replace(/(".*?")/g, '<span class="val">$1</span>')
+                    .replace(/('.*?')/g, '<span class="val">$1</span>');
+            } else if (l === "css") {
+                e = e.replace(/(\/\*[\s\S]*?\*\/)/g, '<span class="cmt">$1</span>')
+                    .replace(/([.#]?[\w-]+)\s*\{/g, '<span class="tag">$1</span> {')
+                    .replace(/([\w-]+)\s*:/g, '<span class="attr">$1</span>:')
+                    .replace(/:\s*([^;{}]+)/g, ': <span class="val">$1</span>')
+                    .replace(/(\d+\.?\d*(px|em|rem|%|vh|vw|s|ms)?)\b/g, '<span class="num">$1</span>');
+            } else if (l === "python") {
+                e = e.replace(/(#.*$)/gm, '<span class="cmt">$1</span>')
+                    .replace(/\b(def|class|return|if|elif|else|for|while|import|from|as|try|except|finally|raise|with|lambda|yield|global|nonlocal|pass|break|continue|and|or|not|in|is)\b/g, '<span class="kw">$1</span>')
+                    .replace(/\b(True|False|None)\b/g, '<span class="bool">$1</span>')
+                    .replace(/\b(print|len|range|int|str|float|list|dict|tuple|set|input|open|self)\b/g, '<span class="fn">$1</span>')
+                    .replace(/\b(\d+\.?\d*)\b/g, '<span class="num">$1</span>')
+                    .replace(/(".*?")/g, '<span class="str">$1</span>')
+                    .replace(/('.*?')/g, '<span class="str">$1</span>');
+            } else if (l === "c#") {
+                e = e.replace(/(\/\/.*$)/gm, '<span class="cmt">$1</span>')
+                    .replace(/(\/\*[\s\S]*?\*\/)/g, '<span class="cmt">$1</span>')
+                    .replace(/\b(var|int|float|double|string|bool|void|class|struct|enum|interface|public|private|protected|static|readonly|new|this|null|true|false|if|else|for|while|do|switch|case|break|continue|return|try|catch|finally|throw|using|namespace|async|await)\b/g, '<span class="kw">$1</span>')
+                    .replace(/\b(Console|String|Math|List|Dictionary)\b/g, '<span class="type">$1</span>')
+                    .replace(/\b(\d+\.?\d*[f]?)\b/g, '<span class="num">$1</span>')
+                    .replace(/(".*?")/g, '<span class="str">$1</span>');
+            } else if (l === "c++") {
+                e = e.replace(/(\/\/.*$)/gm, '<span class="cmt">$1</span>')
+                    .replace(/(\/\*[\s\S]*?\*\/)/g, '<span class="cmt">$1</span>')
+                    .replace(/\b(#include|#define|#ifdef|#ifndef|#endif)\b/g, '<span class="dec">$1</span>')
+                    .replace(/\b(int|float|double|char|bool|void|string|auto|const|static|class|struct|public|private|protected|new|delete|nullptr|this|true|false|if|else|for|while|do|switch|case|break|continue|return|try|catch|throw)\b/g, '<span class="kw">$1</span>')
+                    .replace(/\b(cout|cin|endl|std|vector|map|set|pair)\b/g, '<span class="type">$1</span>')
+                    .replace(/\b(\d+\.?\d*[f]?)\b/g, '<span class="num">$1</span>')
+                    .replace(/(".*?")/g, '<span class="str">$1</span>');
+            } else if (l === "java") {
+                e = e.replace(/(\/\/.*$)/gm, '<span class="cmt">$1</span>')
+                    .replace(/(\/\*[\s\S]*?\*\/)/g, '<span class="cmt">$1</span>')
+                    .replace(/\b(public|private|protected|static|final|abstract|class|interface|extends|implements|new|this|super|null|true|false|if|else|for|while|do|switch|case|break|continue|return|try|catch|finally|throw|void|int|float|double|boolean|char|String|long|short|byte)\b/g, '<span class="kw">$1</span>')
+                    .replace(/\b(System|ArrayList|HashMap|List|Map|Set)\b/g, '<span class="type">$1</span>')
+                    .replace(/\b(\d+\.?\d*[Lf]?)\b/g, '<span class="num">$1</span>')
+                    .replace(/(".*?")/g, '<span class="str">$1</span>');
+            } else if (l === "sql") {
+                e = e.replace(/(--.*$)/gm, '<span class="cmt">$1</span>')
+                    .replace(/\b(SELECT|FROM|WHERE|INSERT|INTO|VALUES|UPDATE|SET|DELETE|CREATE|TABLE|ALTER|DROP|JOIN|LEFT|RIGHT|INNER|ON|AND|OR|NOT|IN|LIKE|ORDER|BY|GROUP|HAVING|LIMIT|OFFSET|AS|DISTINCT|COUNT|SUM|AVG|MAX|MIN|UNION|ALL|PRIMARY|KEY|FOREIGN|REFERENCES|INDEX|CONSTRAINT|DEFAULT|NULL|NOT|AUTO_INCREMENT|VARCHAR|INT|TEXT|BOOLEAN|DATE|TIMESTAMP|FLOAT|DOUBLE|DECIMAL|INTEGER)\b/gi, '<span class="kw">$1</span>')
+                    .replace(/\b(\d+\.?\d*)\b/g, '<span class="num">$1</span>')
+                    .replace(/('.*?')/g, '<span class="str">$1</span>');
+            } else {
+                e = e.replace(/(\/\/.*$)/gm, '<span class="cmt">$1</span>')
+                    .replace(/\b(function|var|let|const|return|if|else|for|while|class|new|this|import|export|from|default|try|catch|finally|throw|async|await|true|false|null|undefined)\b/g, '<span class="kw">$1</span>')
+                    .replace(/\b(\d+\.?\d*)\b/g, '<span class="num">$1</span>')
+                    .replace(/(".*?")/g, '<span class="str">$1</span>')
+                    .replace(/('.*?')/g, '<span class="str">$1</span>');
+            }
+            return e;
+        }
+
+        function showToast(msg) {
+            const t = document.getElementById("toast");
+            t.textContent = msg;
+            t.style.opacity = "1";
+            setTimeout(() => { t.style.opacity = "0"; }, 2000);
+        }
+
+        function runCode(code, lang, outputEl) {
+            outputEl.style.display = "block";
+            const l = (lang || "").toLowerCase();
+
+            if (l === "javascript" || l === "js" || l === "typescript" || l === "ts") {
+                const logs = [];
+                const fakeConsole = {
+                    log: (...args) => logs.push(args.map(a => typeof a === "object" ? JSON.stringify(a, null, 2) : String(a)).join(" ")),
+                    error: (...args) => logs.push("[ERROR] " + args.join(" ")),
+                    warn: (...args) => logs.push("[WARN] " + args.join(" ")),
+                };
+                try {
+                    const fn = new Function("console", code);
+                    fn(fakeConsole);
+                    outputEl.innerHTML = '<div class="output-label">Output</div>' + escapeHtml(logs.join("\n")) || '<div class="output-label">Output</div><span style="color:rgb(100,100,100)">No output</span>';
+                } catch (err) {
+                    outputEl.innerHTML = '<div class="output-label">Error</div><span style="color:rgb(255,80,80)">' + escapeHtml(err.toString()) + '</span>';
+                }
+            } else {
+                outputEl.innerHTML = '<div class="output-label">Output</div><span style="color:rgb(200,200,0)">Only JavaScript can be run in the browser. Language: ' + escapeHtml(lang) + '</span>';
+            }
+        }
+
+        document.getElementById("newPostBtn").addEventListener("click", () => {
+            document.getElementById("postForm").style.display = "block";
+            document.getElementById("postForm").scrollIntoView({ behavior: "smooth" });
+        });
+
+        document.getElementById("cancelPost").addEventListener("click", () => {
+            document.getElementById("postForm").style.display = "none";
+            document.getElementById("postTitle").value = "";
+            document.getElementById("postDesc").value = "";
+            document.getElementById("postCode").value = "";
+        });
+
+        document.getElementById("submitPost").addEventListener("click", async () => {
+            const title = document.getElementById("postTitle").value.trim();
+            const description = document.getElementById("postDesc").value.trim();
+            const language = document.getElementById("postLang").value;
+            const code = document.getElementById("postCode").value.trim();
+
+            if (!title || !code) {
+                showToast("Title and code are required!");
+                return;
+            }
+
+            const { error } = await db.from("posts").insert([{ title, description, language, code, author: currentUser }]);
+
+            if (error) {
+                showToast("Error posting: " + error.message);
+                return;
+            }
+
+            document.getElementById("postForm").style.display = "none";
+            document.getElementById("postTitle").value = "";
+            document.getElementById("postDesc").value = "";
+            document.getElementById("postCode").value = "";
+            showToast("Post shared!");
+            loadPosts();
+        });
+
+        async function deletePost(id) {
+            if (!confirm("Delete this post?")) return;
+            const card = document.querySelector('.delete-btn[data-id="' + id + '"]');
+            if (card) card.closest(".post-card").style.display = "none";
+            const { error } = await db.from("posts").delete().eq("id", id);
+            if (error) {
+                showToast("Error: " + error.message);
+                loadPosts();
+                return;
+            }
+            showToast("Post deleted");
+        }
+
+        async function toggleLike(postId, btn) {
+            const { data: existing } = await db.from("likes").select("id").eq("post_id", postId).eq("user_name", currentUser).limit(1);
+
+            if (existing && existing.length > 0) {
+                await db.from("likes").delete().eq("id", existing[0].id);
+                btn.classList.remove("liked");
+            } else {
+                await db.from("likes").insert([{ post_id: postId, user_name: currentUser }]);
+                btn.classList.add("liked");
+            }
+            const { count } = await db.from("likes").select("*", { count: "exact", head: true }).eq("post_id", postId);
+            btn.querySelector(".like-count").textContent = count || 0;
+        }
+
+        async function loadComments(postId, section) {
+            const { data } = await db.from("comments").select("*").eq("post_id", postId).order("id", { ascending: true });
+            const list = section.querySelector(".comments-list");
+            list.innerHTML = "";
+            if (data && data.length) {
+                data.forEach(c => {
+                    const div = document.createElement("div");
+                    div.className = "comment";
+                    div.innerHTML = '<span class="comment-author">' + escapeHtml(c.author) + ':</span><span class="comment-text">' + escapeHtml(c.text) + '</span>';
+                    list.appendChild(div);
+                });
+            } else {
+                list.innerHTML = '<div style="color:rgb(100,100,100);font-size:13px;padding:5px 0">No comments yet</div>';
+            }
+        }
+
+        async function postComment(postId, input, section) {
+            const text = input.value.trim();
+            if (!text) return;
+            await db.from("comments").insert([{ post_id: postId, author: currentUser, text }]);
+            input.value = "";
+            loadComments(postId, section);
+        }
+
+        async function loadPosts() {
+            const container = document.getElementById("posts");
+            container.innerHTML = '<div id="loading">Loading posts...</div>';
+
+            const { data: posts, error } = await db.from("posts").select("*").order("id", { ascending: false });
+            if (error) {
+                container.innerHTML = '<div id="noPosts">Error loading posts: ' + error.message + '</div>';
+                return;
+            }
+            if (!posts || posts.length === 0) {
+                container.innerHTML = '<div id="noPosts">No posts yet. Be the first to share!</div>';
+                return;
+            }
+
+            const postIds = posts.map(p => p.id);
+
+            const { data: likesData } = await db.from("likes").select("post_id, id, user_name").in("post_id", postIds);
+
+            const likesMap = {};
+            const likedSet = new Set();
+            if (likesData) {
+                likesData.forEach(l => {
+                    if (!likesMap[l.post_id]) likesMap[l.post_id] = 0;
+                    likesMap[l.post_id]++;
+                    if (l.user_name === currentUser) likedSet.add(l.post_id);
+                });
+            }
+
+            const { data: allComments } = await db.from("comments").select("post_id").in("post_id", postIds);
+            const commentCountMap = {};
+            if (allComments) {
+                allComments.forEach(c => {
+                    commentCountMap[c.post_id] = (commentCountMap[c.post_id] || 0) + 1;
+                });
+            }
+
+            container.innerHTML = "";
+            posts.forEach(post => {
+                const isOwner = post.author === currentUser;
+                const likeCount = likesMap[post.id] || 0;
+                const isLiked = likedSet.has(post.id);
+                const commentCount = commentCountMap[post.id] || 0;
+
+                const card = document.createElement("div");
+                card.className = "post-card";
+                card.innerHTML =
+                    '<div class="post-header">' +
+                    '<span class="post-author">Posted by ' + escapeHtml(post.author) + '</span>' +
+                    (isOwner ? '<button class="delete-btn" data-id="' + post.id + '">Delete</button>' : '') +
+                    '</div>' +
+                    '<div class="post-title">' + escapeHtml(post.title) + '</div>' +
+                    '<span class="post-lang">' + escapeHtml(post.language) + '</span>' +
+                    '<div class="code-block">' +
+                    '<div class="code-btns">' +
+                    '<button class="code-btn copy-btn">Copy</button>' +
+                    '<button class="code-btn run-btn">Run</button>' +
+                    '</div>' +
+                    '<div class="code-content">' + highlightCode(post.code, post.language) + '</div>' +
+                    '</div>' +
+                    '<div class="output-block"></div>' +
+                    (post.description ? '<div class="post-description">' + escapeHtml(post.description) + '</div>' : '') +
+                    '<div class="post-actions">' +
+                    '<button class="action-btn like-btn' + (isLiked ? ' liked' : '') + '" data-id="' + post.id + '">' +
+                    '&#9829; <span class="like-count">' + likeCount + '</span></button>' +
+                    '<button class="action-btn comment-toggle-btn" data-id="' + post.id + '">' +
+                    '&#128172; Comments (<span class="comment-count">' + commentCount + '</span>)</button>' +
+                    '</div>' +
+                    '<div class="comments-section" data-post="' + post.id + '">' +
+                    '<div class="comments-list"></div>' +
+                    '<div class="comment-input-row">' +
+                    '<input type="text" placeholder="Write a comment..." class="comment-input">' +
+                    '<button class="comment-send-btn">Post</button>' +
+                    '</div>' +
+                    '</div>';
+
+                const code = post.code;
+
+                card.querySelector(".copy-btn").addEventListener("click", function () {
+                    navigator.clipboard.writeText(code).then(() => {
+                        this.textContent = "Copied!";
+                        setTimeout(() => { this.textContent = "Copy"; }, 1500);
+                    });
+                });
+
+                card.querySelector(".run-btn").addEventListener("click", function () {
+                    runCode(code, post.language, card.querySelector(".output-block"));
+                });
+
+                const delBtn = card.querySelector(".delete-btn");
+                if (delBtn) {
+                    delBtn.addEventListener("click", () => deletePost(post.id));
+                }
+
+                card.querySelector(".like-btn").addEventListener("click", function () {
+                    toggleLike(post.id, this);
+                });
+
+                const commentSection = card.querySelector(".comments-section");
+                card.querySelector(".comment-toggle-btn").addEventListener("click", () => {
+                    commentSection.classList.toggle("open");
+                    if (commentSection.classList.contains("open")) {
+                        loadComments(post.id, commentSection);
+                    }
+                });
+
+                card.querySelector(".comment-send-btn").addEventListener("click", () => {
+                    postComment(post.id, card.querySelector(".comment-input"), commentSection);
+                });
+
+                card.querySelector(".comment-input").addEventListener("keydown", (e) => {
+                    if (e.key === "Enter") postComment(post.id, card.querySelector(".comment-input"), commentSection);
+                });
+
+                container.appendChild(card);
+            });
+        }
+
+        document.getElementById("postCode").addEventListener("keydown", (e) => {
+            if (e.key === "Tab") {
+                e.preventDefault();
+                const s = e.target.selectionStart;
+                const end = e.target.selectionEnd;
+                e.target.value = e.target.value.substring(0, s) + "    " + e.target.value.substring(end);
+                e.target.selectionStart = e.target.selectionEnd = s + 4;
+            }
+        });
+
+        loadPosts();
+    </script>
+</body>
+</html>
