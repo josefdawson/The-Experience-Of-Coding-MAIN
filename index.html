@@ -1,5 +1,7 @@
 <!DOCTYPE html>
+
 <html>
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,8 +12,8 @@
     <header id="header" style="display: none;">
         <button id="settingsBtn" onclick="GETI('settingsPanel').style.display='flex'">Settings</button>
     </header>
-    <img id="logo" src="Logo.png" alt="Logo">
-    <h1 id="title">The Experience Of Coding</h1>
+    <img id="logo" class="abs" src="Logo.png" alt="Logo">
+    <h1 id="title" class="abs">The Experience Of Coding</h1>
 
     <div id="authSection" class="form-section">
         <input type="text" id="username" placeholder="Username">
@@ -22,21 +24,11 @@
     </div>
 
     <div id="btns" style="display: none;">
-        <button id="learnFund" onclick="moveHtml('Fundamentals/main.html')">Learn the Fundamentals</button>
-        <button id="otherSW">VS Code (Web)</button>
-        <button id="projects" onclick="moveHtml('Projects/main.html')">Projects</button>
-        <button id="learnLang" onclick="moveHtml('LLang/main.html')">Learn a Language</button>
-        <button id="codeShare" onclick="moveHtml('Code-share/main.html')">Code Share</button>
-        <button id="freeCourse" onclick="GETI('freeCoursePanel').style.display='flex'">Free Course!</button>
-    </div>
-
-    <div id="freeCoursePanel" style="display: none;">
-        <h2>Free Course!</h2>
-        <p>Email us to get your free course!</p>
-        <p class="schedule-text">Schedule: Fridays & Saturdays</p>
-        <p class="email-label">Send us an email at:</p>
-        <a href="mailto:thelittledevchannel@gmail.com" class="email-link">thelittledevchannel@gmail.com</a>
-        <button id="closeFreeCourse" onclick="GETI('freeCoursePanel').style.display='none'">Close</button>
+        <button id="learnFund" class="abs">Learn the Fundamentals</button>
+        <button id="otherSW" class="abs">VS Code (Web)</button>
+        <button id="projects" class="abs" onclick="moveHtml('Projects/main.html')">Projects</button>
+        <button id="learnLang" class="abs" onclick="moveHtml('LLang/main.html')">Learn a Language</button>
+        <button id="codeShare" class="abs" onclick="moveHtml('Code-share/main.html')">Code Share</button>
     </div>
 
     <div id="settingsPanel" style="display: none;">
