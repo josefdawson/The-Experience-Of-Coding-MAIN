@@ -10,6 +10,10 @@ GETI("otherSW").addEventListener("click", () => {
     window.open("https://vscode.dev");
 })
 
+GETI("coursesBtn").addEventListener("click", () => {
+    alert('Email thelittledevchannel@gmail.com to get your free course! This course is only for beginners. Make sure the subject is "Free Beginner Course", good luck!');
+})
+
 function showApp(username) {
     GETI("authSection").style.display = "none";
     GETI("btns").style.display = "block";
