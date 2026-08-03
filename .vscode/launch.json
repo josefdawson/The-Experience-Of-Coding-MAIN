@@ -5,10 +5,11 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "type": "chrome",
+            "type": "pwa-chrome",
             "request": "launch",
             "name": "Open index.html",
-            "file": "c:\\Users\\josef\\Downloads\\VS Code Folders\\The Experience Of Coding MAIN\\index.html"
+            "file": "${workspaceFolder}/index.html",
+            "webRoot": "${workspaceFolder}"
         }
     ]
 }
